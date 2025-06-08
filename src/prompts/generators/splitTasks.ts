@@ -1,6 +1,6 @@
 /**
  * splitTasks prompt 生成器
- * 負責將模板和參數組合成最終的 prompt
+ * 负责将模板和参数组合成最终的 prompt
  */
 
 import {
@@ -11,7 +11,7 @@ import {
 import { Task } from "../../types/index.js";
 
 /**
- * splitTasks prompt 參數介面
+ * splitTasks prompt 参数介面
  */
 export interface SplitTasksPromptParams {
   updateMode: string;
@@ -20,8 +20,8 @@ export interface SplitTasksPromptParams {
 }
 
 /**
- * 獲取 splitTasks 的完整 prompt
- * @param params prompt 參數
+ * 获取 splitTasks 的完整 prompt
+ * @param params prompt 参数
  * @returns 生成的 prompt
  */
 export function getSplitTasksPrompt(params: SplitTasksPromptParams): string {
@@ -50,7 +50,7 @@ export function getSplitTasksPrompt(params: SplitTasksPromptParams): string {
       const dependencies = task.dependencies
         ? task.dependencies
             .map((d: any) => {
-              // 查找依賴任務的名稱，提供更友好的顯示
+              // 查找依赖任务的名称，提供更友好的显示
               const depTask = params.allTasks.find((t) => t.id === d.taskId);
               return depTask
                 ? `"${depTask.name}" (\`${d.taskId}\`)`
@@ -78,6 +78,6 @@ export function getSplitTasksPrompt(params: SplitTasksPromptParams): string {
     tasksContent,
   });
 
-  // 載入可能的自定義 prompt
+  // 载入可能的自定义 prompt
   return loadPrompt(prompt, "SPLIT_TASKS");
 }

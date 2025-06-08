@@ -15,7 +15,7 @@ import fs from "fs";
 import fsPromises from "fs/promises";
 import { fileURLToPath } from "url";
 
-// 導入所有工具函數和 schema
+// 导入所有工具函数和 schema
 import {
   planTask,
   planTaskSchema,
@@ -56,16 +56,16 @@ async function main() {
     const ENABLE_GUI = process.env.ENABLE_GUI === "true";
 
     if (ENABLE_GUI) {
-      // 創建 Express 應用
+      // 创建 Express 应用
       const app = express();
 
-      // 儲存 SSE 客戶端的列表
+      // 储存 SSE 客户端的列表
       let sseClients: Response[] = [];
 
-      // 發送 SSE 事件的輔助函數
+      // 发送 SSE 事件的辅助函数
       function sendSseUpdate() {
         sseClients.forEach((client) => {
-          // 檢查客戶端是否仍然連接
+          // 检查客户端是否仍然连接
           if (!client.writableEnded) {
             client.write(
               `event: update\ndata: ${JSON.stringify({
@@ -74,27 +74,27 @@ async function main() {
             );
           }
         });
-        // 清理已斷開的客戶端 (可選，但建議)
+        // 清理已断开的客户端 (可选，但建议)
         sseClients = sseClients.filter((client) => !client.writableEnded);
       }
 
-      // 設置靜態文件目錄
+      // 设置静态文件目录
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const publicPath = path.join(__dirname, "public");
       const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
-      const TASKS_FILE_PATH = path.join(DATA_DIR, "tasks.json"); // 提取檔案路徑
+      const TASKS_FILE_PATH = path.join(DATA_DIR, "tasks.json"); // 提取档案路径
 
       app.use(express.static(publicPath));
 
-      // 設置 API 路由
+      // 设置 API 路由
       app.get("/api/tasks", async (req: Request, res: Response) => {
         try {
-          // 使用 fsPromises 保持異步讀取
+          // 使用 fsPromises 保持异步读取
           const tasksData = await fsPromises.readFile(TASKS_FILE_PATH, "utf-8");
           res.json(JSON.parse(tasksData));
         } catch (error) {
-          // 確保檔案不存在時返回空任務列表
+          // 确保档案不存在时返回空任务列表
           if ((error as NodeJS.ErrnoException).code === "ENOENT") {
             res.json({ tasks: [] });
           } else {
@@ -103,43 +103,43 @@ async function main() {
         }
       });
 
-      // 新增：SSE 端點
+      // 新增：SSE 端点
       app.get("/api/tasks/stream", (req: Request, res: Response) => {
         res.writeHead(200, {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
           Connection: "keep-alive",
-          // 可選: CORS 頭，如果前端和後端不在同一個 origin
+          // 可选: CORS 头，如果前端和后端不在同一个 origin
           // "Access-Control-Allow-Origin": "*",
         });
 
-        // 發送一個初始事件或保持連接
+        // 发送一个初始事件或保持连接
         res.write("data: connected\n\n");
 
-        // 將客戶端添加到列表
+        // 将客户端添加到列表
         sseClients.push(res);
 
-        // 當客戶端斷開連接時，將其從列表中移除
+        // 当客户端断开连接时，将其从列表中移除
         req.on("close", () => {
           sseClients = sseClients.filter((client) => client !== res);
         });
       });
 
-      // 獲取可用埠
+      // 获取可用埠
       const port = await getPort();
 
-      // 啟動 HTTP 伺服器
+      // 启动 HTTP 伺服器
       const httpServer = app.listen(port, () => {
-        // 在伺服器啟動後開始監聽檔案變化
+        // 在伺服器启动后开始监听档案变化
         try {
-          // 檢查檔案是否存在，如果不存在則不監聽 (避免 watch 報錯)
+          // 检查档案是否存在，如果不存在则不监听 (避免 watch 报错)
           if (fs.existsSync(TASKS_FILE_PATH)) {
             fs.watch(TASKS_FILE_PATH, (eventType, filename) => {
               if (
                 filename &&
                 (eventType === "change" || eventType === "rename")
               ) {
-                // 稍微延遲發送，以防短時間內多次觸發 (例如編輯器保存)
+                // 稍微延迟发送，以防短时间内多次触发 (例如编辑器保存)
                 // debounce sendSseUpdate if needed
                 sendSseUpdate();
               }
@@ -148,14 +148,14 @@ async function main() {
         } catch (watchError) {}
       });
 
-      // 將 URL 寫入 WebGUI.md
+      // 将 URL 写入 WebGUI.md
       try {
-        // 讀取 TEMPLATES_USE 環境變數並轉換為語言代碼
+        // 读取 TEMPLATES_USE 环境变数并转换为语言代码
         const templatesUse = process.env.TEMPLATES_USE || "en";
         const getLanguageFromTemplate = (template: string): string => {
           if (template === "zh") return "zh-TW";
           if (template === "en") return "en";
-          // 自訂範本預設使用英文
+          // 自订范本预设使用英文
           return "en";
         };
         const language = getLanguageFromTemplate(templatesUse);
@@ -165,13 +165,13 @@ async function main() {
         await fsPromises.writeFile(websiteFilePath, websiteUrl, "utf-8");
       } catch (error) {}
 
-      // 設置進程終止事件處理 (確保移除 watcher)
+      // 设置进程终止事件处理 (确保移除 watcher)
       const shutdownHandler = async () => {
-        // 關閉所有 SSE 連接
+        // 关闭所有 SSE 连接
         sseClients.forEach((client) => client.end());
         sseClients = [];
 
-        // 關閉 HTTP 伺服器
+        // 关闭 HTTP 伺服器
         await new Promise<void>((resolve) => httpServer.close(() => resolve()));
         process.exit(0);
       };
@@ -180,7 +180,7 @@ async function main() {
       process.on("SIGTERM", shutdownHandler);
     }
 
-    // 創建MCP服務器
+    // 创建MCP服务器
     const server = new Server(
       {
         name: "Shrimp Task Manager",
@@ -473,7 +473,7 @@ async function main() {
       }
     );
 
-    // 建立連接
+    // 建立连接
     const transport = new StdioServerTransport();
     await server.connect(transport);
   } catch (error) {

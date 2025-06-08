@@ -1,6 +1,6 @@
 /**
  * completeTask prompt 生成器
- * 負責將模板和參數組合成最終的 prompt
+ * 负责将模板和参数组合成最终的 prompt
  */
 
 import {
@@ -11,7 +11,7 @@ import {
 import { Task } from "../../types/index.js";
 
 /**
- * completeTask prompt 參數介面
+ * completeTask prompt 参数介面
  */
 export interface CompleteTaskPromptParams {
   task: Task;
@@ -19,8 +19,8 @@ export interface CompleteTaskPromptParams {
 }
 
 /**
- * 獲取 completeTask 的完整 prompt
- * @param params prompt 參數
+ * 获取 completeTask 的完整 prompt
+ * @param params prompt 参数
  * @returns 生成的 prompt
  */
 export function getCompleteTaskPrompt(
@@ -30,13 +30,13 @@ export function getCompleteTaskPrompt(
 
   const indexTemplate = loadPromptFromTemplate("completeTask/index.md");
 
-  // 開始構建基本 prompt
+  // 开始构建基本 prompt
   let prompt = generatePrompt(indexTemplate, {
     name: task.name,
     id: task.id,
     completionTime: completionTime,
   });
 
-  // 載入可能的自定義 prompt
+  // 载入可能的自定义 prompt
   return loadPrompt(prompt, "COMPLETE_TASK");
 }

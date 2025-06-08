@@ -5,21 +5,21 @@ import {
 } from "../../models/taskModel.js";
 import { getClearAllTasksPrompt } from "../../prompts/index.js";
 
-// 清除所有任務工具
+// 清除所有任务工具
 export const clearAllTasksSchema = z.object({
   confirm: z
     .boolean()
     .refine((val) => val === true, {
       message:
-        "必須明確確認清除操作，請將 confirm 參數設置為 true 以確認此危險操作",
+        "必须明确确认清除操作，请将 confirm 参数设置为 true 以确认此危险操作",
     })
-    .describe("確認刪除所有未完成的任務（此操作不可逆）"),
+    .describe("确认删除所有未完成的任务（此操作不可逆）"),
 });
 
 export async function clearAllTasks({
   confirm,
 }: z.infer<typeof clearAllTasksSchema>) {
-  // 安全檢查：如果沒有確認，則拒絕操作
+  // 安全检查：如果没有确认，则拒绝操作
   if (!confirm) {
     return {
       content: [
@@ -31,7 +31,7 @@ export async function clearAllTasks({
     };
   }
 
-  // 檢查是否真的有任務需要清除
+  // 检查是否真的有任务需要清除
   const allTasks = await getAllTasks();
   if (allTasks.length === 0) {
     return {
@@ -44,7 +44,7 @@ export async function clearAllTasks({
     };
   }
 
-  // 執行清除操作
+  // 执行清除操作
   const result = await modelClearAllTasks();
 
   return {

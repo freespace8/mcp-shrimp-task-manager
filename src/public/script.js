@@ -1,14 +1,14 @@
-// 全局變量
+// 全局变量
 let tasks = [];
 let selectedTaskId = null;
 let searchTerm = "";
 let sortOption = "date-asc";
-let globalAnalysisResult = null; // 新增：儲存全局分析結果
-let svg, g, simulation; // << 修改：定義 D3 相關變量
+let globalAnalysisResult = null; // 新增：储存全局分析结果
+let svg, g, simulation; // << 修改：定义 D3 相关变量
 
-// 新增：i18n 全局變量
-let currentLang = "en"; // 預設語言
-let translations = {}; // 儲存加載的翻譯
+// 新增：i18n 全局变量
+let currentLang = "en"; // 预设语言
+let translations = {}; // 储存加载的翻译
 
 // DOM元素
 const taskListElement = document.getElementById("task-list");
@@ -23,23 +23,23 @@ const progressLabels = document.getElementById("progress-labels");
 const dependencyGraphElement = document.getElementById("dependency-graph");
 const globalAnalysisResultElement = document.getElementById(
   "global-analysis-result"
-); // 假設 HTML 中有這個元素
-const langSwitcher = document.getElementById("lang-switcher"); // << 新增：獲取切換器元素
+); // 假设 HTML 中有这个元素
+const langSwitcher = document.getElementById("lang-switcher"); // << 新增：获取切换器元素
 
 // 初始化
 document.addEventListener("DOMContentLoaded", () => {
-  // fetchTasks(); // 將由 initI18n() 觸發
+  // fetchTasks(); // 将由 initI18n() 触发
   initI18n(); // << 新增：初始化 i18n
   updateCurrentTime();
   setInterval(updateCurrentTime, 1000);
 
-  // 事件監聽器
-  // statusFilter.addEventListener("change", renderTasks); // 將由 changeLanguage 觸發或在 applyTranslations 後觸發
+  // 事件监听器
+  // statusFilter.addEventListener("change", renderTasks); // 将由 changeLanguage 触发或在 applyTranslations 后触发
   if (statusFilter) {
     statusFilter.addEventListener("change", renderTasks);
   }
 
-  // 新增：搜索和排序事件監聽
+  // 新增：搜索和排序事件监听
   const searchInput = document.getElementById("search-input");
   const sortOptions = document.getElementById("sort-options");
 
@@ -57,10 +57,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 新增：設置 SSE 連接
+  // 新增：设置 SSE 连接
   setupSSE();
 
-  // 新增：語言切換器事件監聽
+  // 新增：语言切换器事件监听
   if (langSwitcher) {
     langSwitcher.addEventListener("change", (e) =>
       changeLanguage(e.target.value)
@@ -68,29 +68,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// 新增：i18n 核心函數
-// 1. 語言檢測 (URL 參數 > navigator.language > 'en')
+// 新增：i18n 核心函数
+// 1. 语言检测 (URL 参数 > navigator.language > 'en')
 function detectLanguage() {
-  // 1. 優先從 URL 參數讀取
+  // 1. 优先从 URL 参数读取
   const urlParams = new URLSearchParams(window.location.search);
   const urlLang = urlParams.get("lang");
-  if (urlLang && ["en", "zh-TW"].includes(urlLang)) {
+  if (urlLang && ["en", "zh-CN"].includes(urlLang)) {
     return urlLang;
   }
 
-  // 2. 檢查瀏覽器語言（移除 localStorage 檢查）
+  // 2. 检查浏览器语言（移除 localStorage 检查）
   const browserLang = navigator.language || navigator.userLanguage;
   if (browserLang) {
-    if (browserLang.toLowerCase().startsWith("zh-tw")) return "zh-TW";
-    if (browserLang.toLowerCase().startsWith("zh")) return "zh-TW"; // 簡體也先 fallback 到繁體
+    if (browserLang.toLowerCase().startsWith("zh-cn")) return "zh-CN";
+    if (browserLang.toLowerCase().startsWith("zh")) return "zh-CN"; // 其他中文也 fallback 到简体
     if (browserLang.toLowerCase().startsWith("en")) return "en";
   }
 
-  // 3. 預設值
+  // 3. 预设值
   return "en";
 }
 
-// 2. 異步加載翻譯文件
+// 2. 异步加载翻译文件
 async function loadTranslations(lang) {
   try {
     const response = await fetch(`/locales/${lang}.json`);
@@ -114,10 +114,10 @@ async function loadTranslations(lang) {
   }
 }
 
-// 3. 翻譯函數
+// 3. 翻译函数
 function translate(key, replacements = {}) {
   let translated = translations[key] || key; // Fallback to key itself
-  // 簡單的佔位符替換（例如 {message}）
+  // 简单的占位符替换（例如 {message}）
   for (const placeholder in replacements) {
     translated = translated.replace(
       `{${placeholder}}`,
@@ -127,36 +127,36 @@ function translate(key, replacements = {}) {
   return translated;
 }
 
-// 4. 應用翻譯到 DOM (處理 textContent, placeholder, title)
+// 4. 应用翻译到 DOM (处理 textContent, placeholder, title)
 function applyTranslations() {
   console.log("Applying translations for:", currentLang);
   document.querySelectorAll("[data-i18n-key]").forEach((el) => {
     const key = el.dataset.i18nKey;
     const translatedText = translate(key);
 
-    // 優先處理特定屬性
+    // 优先处理特定属性
     if (el.hasAttribute("placeholder")) {
       el.placeholder = translatedText;
     } else if (el.hasAttribute("title")) {
       el.title = translatedText;
     } else if (el.tagName === "OPTION") {
       el.textContent = translatedText;
-      // 如果需要，也可以翻譯 value，但通常不需要
+      // 如果需要，也可以翻译 value，但通常不需要
     } else {
-      // 對於大多數元素，設置 textContent
+      // 对于大多数元素，设置 textContent
       el.textContent = translatedText;
     }
   });
-  // 手動更新沒有 data-key 的元素（如果有的話）
-  // 例如，如果 footer 時間格式需要本地化，可以在這裡處理
-  // updateCurrentTime(); // 確保時間格式也可能更新（如果需要）
+  // 手动更新没有 data-key 的元素（如果有的话）
+  // 例如，如果 footer 时间格式需要本地化，可以在这里处理
+  // updateCurrentTime(); // 确保时间格式也可能更新（如果需要）
 }
 
 // 5. 初始化 i18n
 async function initI18n() {
   currentLang = detectLanguage();
   console.log(`Initializing i18n with language: ${currentLang}`);
-  // << 新增：設置切換器的初始值 >>
+  // << 新增：设置切换器的初始值 >>
   if (langSwitcher) {
     langSwitcher.value = currentLang;
   }
@@ -165,9 +165,9 @@ async function initI18n() {
   await fetchTasks();
 }
 
-// 新增：語言切換函數
+// 新增：语言切换函数
 function changeLanguage(lang) {
-  if (!lang || !["en", "zh-TW"].includes(lang)) {
+  if (!lang || !["en", "zh-CN"].includes(lang)) {
     console.warn(`Invalid language selected: ${lang}. Defaulting to English.`);
     lang = "en";
   }
@@ -178,14 +178,14 @@ function changeLanguage(lang) {
       console.log("Translations reloaded, applying...");
       applyTranslations();
       console.log("Re-rendering components...");
-      // 重新渲染需要翻譯的組件
+      // 重新渲染需要翻译的组件
       renderTasks();
       if (selectedTaskId) {
         const task = tasks.find((t) => t.id === selectedTaskId);
         if (task) {
-          selectTask(selectedTaskId); // 確保傳遞 ID，讓 selectTask 重新查找並渲染
+          selectTask(selectedTaskId); // 确保传递 ID，让 selectTask 重新查找并渲染
         } else {
-          // 如果選中的任務已不存在，清除詳情
+          // 如果选中的任务已不存在，清除详情
           taskDetailsContent.innerHTML = `<p class="placeholder">${translate(
             "task_details_placeholder"
           )}</p>`;
@@ -193,30 +193,30 @@ function changeLanguage(lang) {
           highlightNode(null);
         }
       } else {
-        // 如果沒有任務被選中，確保詳情面板顯示 placeholder
+        // 如果没有任务被选中，确保详情面板显示 placeholder
         taskDetailsContent.innerHTML = `<p class="placeholder">${translate(
           "task_details_placeholder"
         )}</p>`;
       }
-      renderDependencyGraph(); // 重新渲染圖表（可能包含 placeholder）
-      updateProgressIndicator(); // 重新渲染進度條（包含標籤）
-      renderGlobalAnalysisResult(); // 重新渲染全局分析（標題）
-      // 確保下拉菜單的值與當前語言一致
+      renderDependencyGraph(); // 重新渲染图表（可能包含 placeholder）
+      updateProgressIndicator(); // 重新渲染进度条（包含标签）
+      renderGlobalAnalysisResult(); // 重新渲染全局分析（标题）
+      // 确保下拉菜单的值与当前语言一致
       if (langSwitcher) langSwitcher.value = currentLang;
       console.log("Language change complete.");
     })
     .catch((error) => {
       console.error("Error changing language:", error);
-      // 可以添加用戶反饋，例如顯示錯誤消息
+      // 可以添加用户反馈，例如显示错误消息
       showTemporaryError("Failed to change language. Please try again."); // Need translation key
     });
 }
-// --- i18n 核心函數結束 ---
+// --- i18n 核心函数结束 ---
 
-// 獲取任務數據
+// 获取任务数据
 async function fetchTasks() {
   try {
-    // 初始載入時顯示 loading (現在使用翻譯)
+    // 初始载入时显示 loading (现在使用翻译)
     if (tasks.length === 0) {
       taskListElement.innerHTML = `<div class="loading">${translate(
         "task_list_loading"
@@ -232,46 +232,46 @@ async function fetchTasks() {
     const data = await response.json();
     const newTasks = data.tasks || [];
 
-    // 提取全局分析結果 (找第一個非空的)
+    // 提取全局分析结果 (找第一个非空的)
     let foundAnalysisResult = null;
     for (const task of newTasks) {
       if (task.analysisResult) {
         foundAnalysisResult = task.analysisResult;
-        break; // 找到一個就夠了
+        break; // 找到一个就够了
       }
     }
-    // 只有當找到的結果與當前儲存的不同時才更新
+    // 只有当找到的结果与当前储存的不同时才更新
     if (foundAnalysisResult !== globalAnalysisResult) {
       globalAnalysisResult = foundAnalysisResult;
-      renderGlobalAnalysisResult(); // 更新顯示
+      renderGlobalAnalysisResult(); // 更新显示
     }
 
-    // --- 智慧更新邏輯 (初步 - 仍需改進以避免閃爍) ---
-    // 簡單地比較任務數量或標識符來決定是否重新渲染
-    // 理想情況下應比較每個任務的內容並進行 DOM 更新
+    // --- 智慧更新逻辑 (初步 - 仍需改进以避免闪烁) ---
+    // 简单地比较任务数量或标识符来决定是否重新渲染
+    // 理想情况下应比较每个任务的内容并进行 DOM 更新
     const tasksChanged = didTasksChange(tasks, newTasks);
 
     if (tasksChanged) {
-      tasks = newTasks; // 更新全局任務列表
+      tasks = newTasks; // 更新全局任务列表
       console.log("Tasks updated via fetch, re-rendering...");
       renderTasks();
       updateProgressIndicator();
-      renderDependencyGraph(); // 更新圖表
+      renderDependencyGraph(); // 更新图表
     } else {
       console.log(
         "No significant task changes detected, skipping full re-render."
       );
-      // 如果不需要重新渲染列表，可能只需要更新進度條
+      // 如果不需要重新渲染列表，可能只需要更新进度条
       updateProgressIndicator();
-      // 考慮是否需要更新圖表（如果狀態可能改變）
-      // renderDependencyGraph(); // 暫時註釋掉，除非狀態變化很關鍵
+      // 考虑是否需要更新图表（如果状态可能改变）
+      // renderDependencyGraph(); // 暂时注释掉，除非状态变化很关键
     }
 
-    // *** 移除 setTimeout 輪詢 ***
+    // *** 移除 setTimeout 轮询 ***
     // setTimeout(fetchTasks, 30000);
   } catch (error) {
     console.error("Error fetching tasks:", error);
-    // 避免覆蓋現有列表，除非是初始載入失敗
+    // 避免覆盖现有列表，除非是初始载入失败
     if (tasks.length === 0) {
       taskListElement.innerHTML = `<div class="error">${translate(
         "error_loading_tasks",
@@ -290,28 +290,28 @@ async function fetchTasks() {
   }
 }
 
-// 新增：設置 Server-Sent Events 連接
+// 新增：设置 Server-Sent Events 连接
 function setupSSE() {
   console.log("Setting up SSE connection to /api/tasks/stream");
   const evtSource = new EventSource("/api/tasks/stream");
 
   evtSource.onmessage = function (event) {
     console.log("SSE message received:", event.data);
-    // 可以根據 event.data 內容做更複雜的判斷，目前只要收到消息就更新
+    // 可以根据 event.data 内容做更复杂的判断，目前只要收到消息就更新
   };
 
   evtSource.addEventListener("update", function (event) {
     console.log("SSE 'update' event received:", event.data);
-    // 收到更新事件，重新獲取任務列表
+    // 收到更新事件，重新获取任务列表
     fetchTasks();
   });
 
   evtSource.onerror = function (err) {
     console.error("EventSource failed:", err);
-    // 可以實現重連邏輯
-    evtSource.close(); // 關閉錯誤的連接
-    // 延遲一段時間後嘗試重新連接
-    setTimeout(setupSSE, 5000); // 5秒後重試
+    // 可以实现重连逻辑
+    evtSource.close(); // 关闭错误的连接
+    // 延迟一段时间后尝试重新连接
+    setTimeout(setupSSE, 5000); // 5秒后重试
   };
 
   evtSource.onopen = function () {
@@ -319,7 +319,7 @@ function setupSSE() {
   };
 }
 
-// 新增：比較任務列表是否有變化的輔助函數 (最全面版)
+// 新增：比较任务列表是否有变化的辅助函数 (最全面版)
 function didTasksChange(oldTasks, newTasks) {
   if (!oldTasks || !newTasks) return true; // Handle initial load or error states
 
@@ -439,7 +439,7 @@ function compareRelatedFiles(files1, files2) {
   return true;
 }
 
-// 新增：顯示臨時錯誤訊息的函數
+// 新增：显示临时错误讯息的函数
 function showTemporaryError(message) {
   const errorElement = document.createElement("div");
   errorElement.className = "temporary-error";
@@ -447,12 +447,12 @@ function showTemporaryError(message) {
   document.body.appendChild(errorElement);
   setTimeout(() => {
     errorElement.remove();
-  }, 3000); // 顯示 3 秒
+  }, 3000); // 显示 3 秒
 }
 
-// 渲染任務列表 - *** 需要進一步優化以實現智慧更新 ***
+// 渲染任务列表 - *** 需要进一步优化以实现智慧更新 ***
 function renderTasks() {
-  console.log("Rendering tasks..."); // 添加日誌
+  console.log("Rendering tasks..."); // 添加日志
   const filterValue = statusFilter.value;
 
   let filteredTasks = tasks;
@@ -487,8 +487,8 @@ function renderTasks() {
     }
   });
 
-  // --- 簡單粗暴的替換 (會導致閃爍) ---
-  // TODO: 實現 DOM Diffing 或更智慧的更新策略
+  // --- 简单粗暴的替换 (会导致闪烁) ---
+  // TODO: 实现 DOM Diffing 或更智慧的更新策略
   if (filteredTasks.length === 0) {
     taskListElement.innerHTML = `<div class="placeholder">${translate(
       "task_list_empty"
@@ -513,9 +513,9 @@ function renderTasks() {
       )
       .join("");
   }
-  // --- 結束簡單粗暴的替換 ---
+  // --- 结束简单粗暴的替换 ---
 
-  // 重新應用選中狀態
+  // 重新应用选中状态
   if (selectedTaskId) {
     const taskExists = tasks.some((t) => t.id === selectedTaskId);
     if (taskExists) {
@@ -526,7 +526,7 @@ function renderTasks() {
         selectedElement.classList.add("selected");
       }
     } else {
-      // 如果選中的任務在新的列表中不存在了，清除選擇
+      // 如果选中的任务在新的列表中不存在了，清除选择
       console.log(
         `Selected task ${selectedTaskId} no longer exists, clearing selection.`
       );
@@ -534,14 +534,14 @@ function renderTasks() {
       taskDetailsContent.innerHTML = `<p class="placeholder">${translate(
         "task_details_placeholder"
       )}</p>`;
-      highlightNode(null); // 清除圖表高亮
+      highlightNode(null); // 清除图表高亮
     }
   }
 }
 
-// 選擇任務
+// 选择任务
 function selectTask(taskId) {
-  // 清除舊的選中狀態和高亮
+  // 清除旧的选中状态和高亮
   if (selectedTaskId) {
     const previousElement = document.querySelector(
       `.task-item[data-id="${selectedTaskId}"]`
@@ -551,7 +551,7 @@ function selectTask(taskId) {
     }
   }
 
-  // 如果再次點擊同一個任務，則取消選中
+  // 如果再次点击同一个任务，则取消选中
   if (selectedTaskId === taskId) {
     selectedTaskId = null;
     taskDetailsContent.innerHTML = `<p class="placeholder">${translate(
@@ -563,7 +563,7 @@ function selectTask(taskId) {
 
   selectedTaskId = taskId;
 
-  // 添加新的選中狀態
+  // 添加新的选中状态
   const selectedElement = document.querySelector(
     `.task-item[data-id="${taskId}"]`
   );
@@ -571,7 +571,7 @@ function selectTask(taskId) {
     selectedElement.classList.add("selected");
   }
 
-  // 獲取並顯示任務詳情
+  // 获取并显示任务详情
   const task = tasks.find((t) => t.id === taskId);
 
   if (!task) {
@@ -581,8 +581,8 @@ function selectTask(taskId) {
     return;
   }
 
-  // --- 安全地填充任務詳情 ---
-  // 1. 創建基本骨架 (使用 innerHTML，但將動態內容替換為帶 ID 的空元素)
+  // --- 安全地填充任务详情 ---
+  // 1. 创建基本骨架 (使用 innerHTML，但将动态内容替换为带 ID 的空元素)
   taskDetailsContent.innerHTML = `
     <div class="task-details-header">
       <h3 id="detail-name"></h3>
@@ -593,7 +593,7 @@ function selectTask(taskId) {
       </div>
     </div>
     
-    <!-- 新增：條件顯示 Summary -->
+    <!-- 新增：条件显示 Summary -->
     <div class="task-details-section" id="detail-summary-section" style="display: none;">
       <h4>${translate("task_detail_summary_title")}</h4>
       <p id="detail-summary"></p>
@@ -634,7 +634,7 @@ function selectTask(taskId) {
     </div>
   `;
 
-  // 2. 獲取對應元素並使用 textContent 安全地填充內容
+  // 2. 获取对应元素并使用 textContent 安全地填充内容
   const detailName = document.getElementById("detail-name");
   const detailStatus = document.getElementById("detail-status");
   const detailDescription = document.getElementById("detail-description");
@@ -644,7 +644,7 @@ function selectTask(taskId) {
   const detailVerificationCriteria = document.getElementById(
     "detail-verification-criteria"
   );
-  // 新增：獲取 Summary 相關元素
+  // 新增：获取 Summary 相关元素
   const detailSummarySection = document.getElementById(
     "detail-summary-section"
   );
@@ -676,15 +676,15 @@ function selectTask(taskId) {
   // 新增：填充 Summary (如果存在且已完成)
   if (task.summary && detailSummarySection && detailSummary) {
     detailSummary.textContent = task.summary;
-    detailSummarySection.style.display = "block"; // 顯示區塊
+    detailSummarySection.style.display = "block"; // 显示区块
   } else if (detailSummarySection) {
-    detailSummarySection.style.display = "none"; // 隱藏區塊
+    detailSummarySection.style.display = "none"; // 隐藏区块
   }
 
   if (detailNotes)
     detailNotes.textContent = task.notes || translate("task_detail_no_notes");
 
-  // 3. 動態生成依賴項和相關文件 (這些可以包含安全的 HTML 結構如 span)
+  // 3. 动态生成依赖项和相关文件 (这些可以包含安全的 HTML 结构如 span)
   if (detailDependencies) {
     const dependenciesHtml =
       task.dependencies && task.dependencies.length
@@ -735,18 +735,18 @@ function selectTask(taskId) {
     detailRelatedFiles.innerHTML = relatedFilesHtml;
   }
 
-  // --- 原來的 innerHTML 賦值已移除 ---
+  // --- 原来的 innerHTML 赋值已移除 ---
 
-  // 只調用高亮函數
-  highlightNode(taskId); // 只調用 highlightNode
+  // 只调用高亮函数
+  highlightNode(taskId); // 只调用 highlightNode
 }
 
-// 渲染依賴關係圖 - 修改為全局視圖和 enter/update/exit 模式
+// 渲染依赖关系图 - 修改为全局视图和 enter/update/exit 模式
 function renderDependencyGraph() {
   if (!dependencyGraphElement || !window.d3) {
     console.warn("D3 or dependency graph element not found.");
     if (dependencyGraphElement) {
-      // 首次或D3丟失時顯示提示，不清空已有的圖
+      // 首次或D3丢失时显示提示，不清空已有的图
       if (!dependencyGraphElement.querySelector("svg")) {
         dependencyGraphElement.innerHTML = `<p class="placeholder">${translate(
           "error_loading_graph_d3" // Use a specific key
@@ -756,24 +756,24 @@ function renderDependencyGraph() {
     return;
   }
 
-  // 如果沒有任務，清空圖表並顯示提示
+  // 如果没有任务，清空图表并显示提示
   if (tasks.length === 0) {
     dependencyGraphElement.innerHTML = `<p class="placeholder">${translate(
       "dependency_graph_placeholder_empty"
     )}</p>`;
-    // 重置 SVG 和 simulation 變數，以便下次正確初始化
+    // 重置 SVG 和 simulation 变数，以便下次正确初始化
     svg = null;
     g = null;
     simulation = null;
     return;
   }
 
-  // 1. 準備節點 (Nodes) 和連結 (Links)
+  // 1. 准备节点 (Nodes) 和连结 (Links)
   const nodes = tasks.map((task) => ({
     id: task.id,
     name: task.name,
     status: task.status,
-    // 保留現有位置以便平滑過渡
+    // 保留现有位置以便平滑过渡
     x: simulation?.nodes().find((n) => n.id === task.id)?.x,
     y: simulation?.nodes().find((n) => n.id === task.id)?.y,
     fx: simulation?.nodes().find((n) => n.id === task.id)?.fx, // 保留固定位置
@@ -790,7 +790,7 @@ function renderDependencyGraph() {
           nodes.some((n) => n.id === sourceId) &&
           nodes.some((n) => n.id === targetId)
         ) {
-          // 確保 link 的 source/target 是 ID，以便力導向識別
+          // 确保 link 的 source/target 是 ID，以便力导向识别
           links.push({ source: sourceId, target: targetId });
         } else {
           console.warn(
@@ -801,7 +801,7 @@ function renderDependencyGraph() {
     }
   });
 
-  // 2. D3 繪圖設置與更新
+  // 2. D3 绘图设置与更新
   const width = dependencyGraphElement.clientWidth;
   const height = dependencyGraphElement.clientHeight || 400;
 
@@ -816,16 +816,16 @@ function renderDependencyGraph() {
       .attr("viewBox", [0, 0, width, height])
       .attr("preserveAspectRatio", "xMidYMid meet");
 
-    g = svg.append("g"); // 主要組，用於縮放和平移
+    g = svg.append("g"); // 主要组，用于缩放和平移
 
-    // 添加縮放和平移
+    // 添加缩放和平移
     svg.call(
       d3.zoom().on("zoom", (event) => {
         g.attr("transform", event.transform);
       })
     );
 
-    // 添加箭頭定義
+    // 添加箭头定义
     g.append("defs")
       .append("marker")
       .attr("id", "arrowhead")
@@ -839,42 +839,42 @@ function renderDependencyGraph() {
       .attr("d", "M0,-5L10,0L0,5")
       .attr("fill", "#999");
 
-    // 初始化力導向模擬
+    // 初始化力导向模拟
     simulation = d3
-      .forceSimulation() // 初始化時不傳入 nodes
+      .forceSimulation() // 初始化时不传入 nodes
       .force(
         "link",
         d3
           .forceLink()
           .id((d) => d.id)
-          .distance(100) // 指定 id 訪問器
+          .distance(100) // 指定 id 访问器
       )
       .force("charge", d3.forceManyBody().strength(-300))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force("collide", d3.forceCollide().radius(30))
-      .on("tick", ticked); // 綁定 tick 事件處理函數
+      .on("tick", ticked); // 绑定 tick 事件处理函数
 
-    // 添加用於存放連結和節點的組
+    // 添加用于存放连结和节点的组
     g.append("g").attr("class", "links");
     g.append("g").attr("class", "nodes");
   } else {
     // --- 更新渲染 ---
     console.log("Updating dependency graph");
-    // 更新 SVG 尺寸和中心力 (如果窗口大小改變)
+    // 更新 SVG 尺寸和中心力 (如果窗口大小改变)
     svg.attr("viewBox", [0, 0, width, height]);
     simulation.force("center", d3.forceCenter(width / 2, height / 2));
   }
 
-  // 3. 更新連結
+  // 3. 更新连结
   const linkSelection = g
-    .select(".links") // 選擇放置連結的 g 元素
+    .select(".links") // 选择放置连结的 g 元素
     .selectAll("line.link")
     .data(
       links,
       (d) => `${d.source.id || d.source}-${d.target.id || d.target}`
-    ); // Key function 基於 source/target ID
+    ); // Key function 基于 source/target ID
 
-  // Exit - 移除舊連結
+  // Exit - 移除旧连结
   linkSelection
     .exit()
     .transition("exit")
@@ -882,7 +882,7 @@ function renderDependencyGraph() {
     .attr("stroke-opacity", 0)
     .remove();
 
-  // Enter - 添加新連結
+  // Enter - 添加新连结
   const linkEnter = linkSelection
     .enter()
     .append("line")
@@ -891,7 +891,7 @@ function renderDependencyGraph() {
     .attr("marker-end", "url(#arrowhead)")
     .attr("stroke-opacity", 0); // 初始透明
 
-  // Update + Enter - 更新所有連結的屬性 (合併 enter 和 update 選擇集)
+  // Update + Enter - 更新所有连结的属性 (合并 enter 和 update 选择集)
   const linkUpdate = linkSelection.merge(linkEnter);
 
   linkUpdate
@@ -900,28 +900,28 @@ function renderDependencyGraph() {
     .attr("stroke-opacity", 0.6)
     .attr("stroke-width", 1.5);
 
-  // 4. 更新節點
+  // 4. 更新节点
   const nodeSelection = g
-    .select(".nodes") // 選擇放置節點的 g 元素
+    .select(".nodes") // 选择放置节点的 g 元素
     .selectAll("g.node-item")
-    .data(nodes, (d) => d.id); // 使用 ID 作為 key
+    .data(nodes, (d) => d.id); // 使用 ID 作为 key
 
-  // Exit - 移除舊節點
+  // Exit - 移除旧节点
   nodeSelection
     .exit()
     .transition("exit")
     .duration(300)
-    .attr("transform", (d) => `translate(${d.x || 0}, ${d.y || 0}) scale(0)`) // 從當前位置縮放消失
+    .attr("transform", (d) => `translate(${d.x || 0}, ${d.y || 0}) scale(0)`) // 从当前位置缩放消失
     .attr("opacity", 0)
     .remove();
 
-  // Enter - 添加新節點組
+  // Enter - 添加新节点组
   const nodeEnter = nodeSelection
     .enter()
     .append("g")
-    .attr("class", (d) => `node-item status-${getStatusClass(d.status)}`) // 使用輔助函數設置 class
+    .attr("class", (d) => `node-item status-${getStatusClass(d.status)}`) // 使用辅助函数设置 class
     .attr("data-id", (d) => d.id)
-    // 初始位置：從模擬計算的位置（如果存在）或隨機位置出現，初始縮放為0
+    // 初始位置：从模拟计算的位置（如果存在）或随机位置出现，初始缩放为0
     .attr(
       "transform",
       (d) =>
@@ -932,15 +932,15 @@ function renderDependencyGraph() {
     .attr("opacity", 0)
     .call(drag(simulation)); // 添加拖拽
 
-  // 添加圓形到 Enter 選擇集
+  // 添加圆形到 Enter 选择集
   nodeEnter
     .append("circle")
     .attr("r", 10)
     .attr("stroke", "#fff")
     .attr("stroke-width", 1.5);
-  // 顏色將在 merge 後通過 update 過渡設置
+  // 颜色将在 merge 后通过 update 过渡设置
 
-  // 添加文字到 Enter 選擇集
+  // 添加文字到 Enter 选择集
   nodeEnter
     .append("text")
     .attr("x", 15)
@@ -949,41 +949,41 @@ function renderDependencyGraph() {
     .attr("font-size", "10px")
     .attr("fill", "#ccc");
 
-  // 添加標題 (tooltip) 到 Enter 選擇集
+  // 添加标题 (tooltip) 到 Enter 选择集
   nodeEnter
     .append("title")
     .text((d) => `${d.name} (${getStatusText(d.status)})`);
 
-  // 添加點擊事件到 Enter 選擇集
+  // 添加点击事件到 Enter 选择集
   nodeEnter.on("click", (event, d) => {
     selectTask(d.id);
     event.stopPropagation();
   });
 
-  // Update + Enter - 合併並更新所有節點
+  // Update + Enter - 合并并更新所有节点
   const nodeUpdate = nodeSelection.merge(nodeEnter);
 
-  // 過渡到最終位置和狀態
+  // 过渡到最终位置和状态
   nodeUpdate
     .transition("update")
     .duration(500)
-    .attr("transform", (d) => `translate(${d.x || 0}, ${d.y || 0}) scale(1)`) // 移動到模擬位置並恢復大小
+    .attr("transform", (d) => `translate(${d.x || 0}, ${d.y || 0}) scale(1)`) // 移动到模拟位置并恢复大小
     .attr("opacity", 1);
 
-  // 更新節點顏色 (單獨過渡)
+  // 更新节点颜色 (单独过渡)
   nodeUpdate
     .select("circle")
     .transition("color")
     .duration(500)
-    .attr("fill", getNodeColor); // 使用已有的 getNodeColor 函數
+    .attr("fill", getNodeColor); // 使用已有的 getNodeColor 函数
 
-  // 更新節點狀態 Class (即時更新，無需過渡)
+  // 更新节点状态 Class (即时更新，无需过渡)
   nodeUpdate.attr(
     "class",
     (d) => `node-item status-${getStatusClass(d.status)}`
   );
 
-  // << 新增：重新定義 drag 函數 >>
+  // << 新增：重新定义 drag 函数 >>
   function drag(simulation) {
     function dragstarted(event, d) {
       if (!event.active) simulation.alphaTarget(0.3).restart();
@@ -998,10 +998,10 @@ function renderDependencyGraph() {
 
     function dragended(event, d) {
       if (!event.active) simulation.alphaTarget(0);
-      // 取消固定位置，讓節點可以繼續被力導引影響 (如果需要)
+      // 取消固定位置，让节点可以继续被力导引影响 (如果需要)
       // d.fx = null;
       // d.fy = null;
-      // 或者保留固定位置直到再次拖動
+      // 或者保留固定位置直到再次拖动
     }
 
     return d3
@@ -1010,19 +1010,19 @@ function renderDependencyGraph() {
       .on("drag", dragged)
       .on("end", dragended);
   }
-  // << drag 函數定義結束 >>
+  // << drag 函数定义结束 >>
 
-  // 5. 更新力導向模擬
-  simulation.nodes(nodes); // 在處理完 enter/exit 後更新模擬節點
-  simulation.force("link").links(links); // 更新模擬連結
-  simulation.alpha(0.3).restart(); // 重新激活模擬
+  // 5. 更新力导向模拟
+  simulation.nodes(nodes); // 在处理完 enter/exit 后更新模拟节点
+  simulation.force("link").links(links); // 更新模拟连结
+  simulation.alpha(0.3).restart(); // 重新激活模拟
 }
 
-// Tick 函數: 更新節點和連結位置
+// Tick 函数: 更新节点和连结位置
 function ticked() {
   if (!g) return;
 
-  // 更新連結位置
+  // 更新连结位置
   g.select(".links")
     .selectAll("line.link")
     .attr("x1", (d) => d.source.x)
@@ -1030,31 +1030,31 @@ function ticked() {
     .attr("x2", (d) => d.target.x)
     .attr("y2", (d) => d.target.y);
 
-  // 更新節點組位置
+  // 更新节点组位置
   g.select(".nodes")
     .selectAll("g.node-item")
-    // << 修改：添加座標後備值 >>
+    // << 修改：添加座标后备值 >>
     .attr("transform", (d) => `translate(${d.x || 0}, ${d.y || 0})`);
 }
 
-// 函數：根據節點數據返回顏色 (示例)
+// 函数：根据节点数据返回颜色 (示例)
 function getNodeColor(nodeData) {
   switch (nodeData.status) {
     case "已完成":
     case "completed":
       return "var(--secondary-color)";
-    case "進行中":
+    case "进行中":
     case "in_progress":
       return "var(--primary-color)";
-    case "待處理":
+    case "待处理":
     case "pending":
-      return "#f1c40f"; // 與進度條和狀態標籤一致
+      return "#f1c40f"; // 与进度条和状态标签一致
     default:
-      return "#7f8c8d"; // 未知狀態
+      return "#7f8c8d"; // 未知状态
   }
 }
 
-// 輔助函數
+// 辅助函数
 function getStatusText(status) {
   switch (status) {
     case "pending":
@@ -1070,10 +1070,10 @@ function getStatusText(status) {
 
 function updateCurrentTime() {
   const now = new Date();
-  // 保留原始格式，如果需要本地化時間，可以在此處使用 translate 或其他庫
-  const timeString = now.toLocaleString(); // 考慮是否需要基於 currentLang 格式化
+  // 保留原始格式，如果需要本地化时间，可以在此处使用 translate 或其他库
+  const timeString = now.toLocaleString(); // 考虑是否需要基于 currentLang 格式化
   if (currentTimeElement) {
-    // 將靜態文本和動態時間分開
+    // 将静态文本和动态时间分开
     const footerTextElement = currentTimeElement.parentNode.childNodes[0];
     if (footerTextElement && footerTextElement.nodeType === Node.TEXT_NODE) {
       footerTextElement.nodeValue = translate("footer_copyright");
@@ -1081,24 +1081,24 @@ function updateCurrentTime() {
     currentTimeElement.textContent = timeString;
   }
 }
-// 更新項目進度指示器
+// 更新项目进度指示器
 function updateProgressIndicator() {
   const totalTasks = tasks.length;
   if (totalTasks === 0) {
-    progressIndicator.style.display = "none"; // 沒有任務時隱藏
+    progressIndicator.style.display = "none"; // 没有任务时隐藏
     return;
   }
 
-  progressIndicator.style.display = "block"; // 確保顯示
+  progressIndicator.style.display = "block"; // 确保显示
 
   const completedTasks = tasks.filter(
     (task) => task.status === "completed" || task.status === "已完成"
   ).length;
   const inProgressTasks = tasks.filter(
-    (task) => task.status === "in_progress" || task.status === "進行中"
+    (task) => task.status === "in_progress" || task.status === "进行中"
   ).length;
   const pendingTasks = tasks.filter(
-    (task) => task.status === "pending" || task.status === "待處理"
+    (task) => task.status === "pending" || task.status === "待处理"
   ).length;
 
   const completedPercent =
@@ -1111,7 +1111,7 @@ function updateProgressIndicator() {
   progressInProgress.style.width = `${inProgressPercent}%`;
   progressPending.style.width = `${pendingPercent}%`;
 
-  // 更新標籤 (使用 translate)
+  // 更新标签 (使用 translate)
   progressLabels.innerHTML = `
     <span class="label-completed">${translate(
       "progress_completed"
@@ -1128,16 +1128,16 @@ function updateProgressIndicator() {
   `;
 }
 
-// 新增：渲染全局分析結果
+// 新增：渲染全局分析结果
 function renderGlobalAnalysisResult() {
   let targetElement = document.getElementById("global-analysis-result");
 
-  // 如果元素不存在，嘗試創建並添加到合適的位置 (例如 header 或 main content 前)
+  // 如果元素不存在，尝试创建并添加到合适的位置 (例如 header 或 main content 前)
   if (!targetElement) {
     targetElement = document.createElement("div");
     targetElement.id = "global-analysis-result";
-    targetElement.className = "global-analysis-section"; // 添加樣式 class
-    // 嘗試插入到 header 之後或 main 之前
+    targetElement.className = "global-analysis-section"; // 添加样式 class
+    // 尝试插入到 header 之后或 main 之前
     const header = document.querySelector("header");
     const mainContent = document.querySelector("main");
     if (header && header.parentNode) {
@@ -1145,7 +1145,7 @@ function renderGlobalAnalysisResult() {
     } else if (mainContent && mainContent.parentNode) {
       mainContent.parentNode.insertBefore(targetElement, mainContent);
     } else {
-      // 作為最後手段，添加到 body 開頭
+      // 作为最后手段，添加到 body 开头
       document.body.insertBefore(targetElement, document.body.firstChild);
     }
   }
@@ -1159,37 +1159,37 @@ function renderGlobalAnalysisResult() {
         `;
     targetElement.style.display = "block";
   } else {
-    targetElement.style.display = "none"; // 如果沒有結果則隱藏
-    targetElement.innerHTML = ""; // 清空內容
+    targetElement.style.display = "none"; // 如果没有结果则隐藏
+    targetElement.innerHTML = ""; // 清空内容
   }
 }
 
-// 新增：高亮依賴圖中的節點
+// 新增：高亮依赖图中的节点
 function highlightNode(taskId, status = null) {
   if (!g || !window.d3) return;
 
-  // 清除所有節點的高亮
-  g.select(".nodes") // 從 g 開始選擇
+  // 清除所有节点的高亮
+  g.select(".nodes") // 从 g 开始选择
     .selectAll("g.node-item")
     .classed("highlighted", false);
 
   if (!taskId) return;
 
-  // 高亮選中的節點
+  // 高亮选中的节点
   const selectedNode = g
-    .select(".nodes") // 從 g 開始選擇
+    .select(".nodes") // 从 g 开始选择
     .select(`g.node-item[data-id="${taskId}"]`);
   if (!selectedNode.empty()) {
     selectedNode.classed("highlighted", true);
-    // 可以選擇性地將選中節點帶到最前面
+    // 可以选择性地将选中节点带到最前面
     // selectedNode.raise();
   }
 }
 
-// 新增：輔助函數獲取狀態 class (應放在 ticked 函數之後，getNodeColor 之前或之後均可)
+// 新增：辅助函数获取状态 class (应放在 ticked 函数之后，getNodeColor 之前或之后均可)
 function getStatusClass(status) {
-  return status ? status.replace(/_/g, "-") : "unknown"; // 替換所有下劃線
+  return status ? status.replace(/_/g, "-") : "unknown"; // 替换所有下划线
 }
 
-// 函數：啟用節點拖拽 (保持不變)
+// 函数：启用节点拖拽 (保持不变)
 // ... drag ...

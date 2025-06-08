@@ -1,4 +1,4 @@
-// 導出所有思維鏈工具
+// 导出所有思维链工具
 
 // processThought
 export { processThought, processThoughtSchema } from "./processThought.js";

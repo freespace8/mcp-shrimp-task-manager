@@ -1,6 +1,6 @@
 /**
  * reflectTask prompt 生成器
- * 負責將模板和參數組合成最終的 prompt
+ * 负责将模板和参数组合成最终的 prompt
  */
 
 import {
@@ -10,7 +10,7 @@ import {
 } from "../loader.js";
 
 /**
- * reflectTask prompt 參數介面
+ * reflectTask prompt 参数介面
  */
 export interface ReflectTaskPromptParams {
   summary: string;
@@ -18,8 +18,8 @@ export interface ReflectTaskPromptParams {
 }
 
 /**
- * 獲取 reflectTask 的完整 prompt
- * @param params prompt 參數
+ * 获取 reflectTask 的完整 prompt
+ * @param params prompt 参数
  * @returns 生成的 prompt
  */
 export function getReflectTaskPrompt(params: ReflectTaskPromptParams): string {
@@ -29,6 +29,6 @@ export function getReflectTaskPrompt(params: ReflectTaskPromptParams): string {
     analysis: params.analysis,
   });
 
-  // 載入可能的自定義 prompt
+  // 载入可能的自定义 prompt
   return loadPrompt(prompt, "REFLECT_TASK");
 }

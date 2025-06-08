@@ -1,4 +1,4 @@
-// 導出所有專案工具
+// 导出所有专案工具
 
 // initProjectRules
 export {

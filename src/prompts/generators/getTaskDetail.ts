@@ -1,6 +1,6 @@
 /**
  * getTaskDetail prompt 生成器
- * 負責將模板和參數組合成最終的 prompt
+ * 负责将模板和参数组合成最终的 prompt
  */
 
 import {
@@ -11,7 +11,7 @@ import {
 import { Task } from "../../types/index.js";
 
 /**
- * getTaskDetail prompt 參數介面
+ * getTaskDetail prompt 参数介面
  */
 export interface GetTaskDetailPromptParams {
   taskId: string;
@@ -20,8 +20,8 @@ export interface GetTaskDetailPromptParams {
 }
 
 /**
- * 獲取 getTaskDetail 的完整 prompt
- * @param params prompt 參數
+ * 获取 getTaskDetail 的完整 prompt
+ * @param params prompt 参数
  * @returns 生成的 prompt
  */
 export function getGetTaskDetailPrompt(
@@ -29,7 +29,7 @@ export function getGetTaskDetailPrompt(
 ): string {
   const { taskId, task, error } = params;
 
-  // 如果有錯誤，顯示錯誤訊息
+  // 如果有错误，显示错误讯息
   if (error) {
     const errorTemplate = loadPromptFromTemplate("getTaskDetail/error.md");
     return generatePrompt(errorTemplate, {
@@ -37,7 +37,7 @@ export function getGetTaskDetailPrompt(
     });
   }
 
-  // 如果找不到任務，顯示找不到任務的訊息
+  // 如果找不到任务，显示找不到任务的讯息
   if (!task) {
     const notFoundTemplate = loadPromptFromTemplate(
       "getTaskDetail/notFound.md"
@@ -111,13 +111,13 @@ export function getGetTaskDetailPrompt(
     );
     complatedSummaryPrompt = generatePrompt(complatedSummaryTemplate, {
       completedTime: new Date(task.completedAt).toLocaleString("zh-TW"),
-      summary: task.summary || "*無完成摘要*",
+      summary: task.summary || "*无完成摘要*",
     });
   }
 
   const indexTemplate = loadPromptFromTemplate("getTaskDetail/index.md");
 
-  // 開始構建基本 prompt
+  // 开始构建基本 prompt
   let prompt = generatePrompt(indexTemplate, {
     name: task.name,
     id: task.id,
@@ -133,6 +133,6 @@ export function getGetTaskDetailPrompt(
     complatedSummaryTemplate: complatedSummaryPrompt,
   });
 
-  // 載入可能的自定義 prompt
+  // 载入可能的自定义 prompt
   return loadPrompt(prompt, "GET_TASK_DETAIL");
 }

@@ -1,6 +1,6 @@
 [English](README.md) | [中文](docs/zh/README.md)
 
-## 目錄
+## 目录
 
 - [✨ Features](#features1)
 - [🧭 Usage Guide](#usage-guide)

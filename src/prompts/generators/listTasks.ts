@@ -1,6 +1,6 @@
 /**
  * listTasks prompt 生成器
- * 負責將模板和參數組合成最終的 prompt
+ * 负责将模板和参数组合成最终的 prompt
  */
 
 import {
@@ -11,7 +11,7 @@ import {
 import { Task, TaskStatus } from "../../types/index.js";
 
 /**
- * listTasks prompt 參數介面
+ * listTasks prompt 参数介面
  */
 export interface ListTasksPromptParams {
   status: string;
@@ -20,14 +20,14 @@ export interface ListTasksPromptParams {
 }
 
 /**
- * 獲取 listTasks 的完整 prompt
- * @param params prompt 參數
+ * 获取 listTasks 的完整 prompt
+ * @param params prompt 参数
  * @returns 生成的 prompt
  */
 export function getListTasksPrompt(params: ListTasksPromptParams): string {
   const { status, tasks, allTasks } = params;
 
-  // 如果沒有任務，顯示通知
+  // 如果没有任务，显示通知
   if (allTasks.length === 0) {
     const notFoundTemplate = loadPromptFromTemplate("listTasks/notFound.md");
     const statusText = status === "all" ? "任何" : `任何 ${status} 的`;
@@ -36,11 +36,11 @@ export function getListTasksPrompt(params: ListTasksPromptParams): string {
     });
   }
 
-  // 獲取所有狀態的計數
+  // 获取所有状态的计数
   const statusCounts = Object.values(TaskStatus)
     .map((statusType) => {
       const count = tasks[statusType]?.length || 0;
-      return `- **${statusType}**: ${count} 個任務`;
+      return `- **${statusType}**: ${count} 个任务`;
     })
     .join("\n");
 
@@ -59,7 +59,7 @@ export function getListTasksPrompt(params: ListTasksPromptParams): string {
 
   let taskDetails = "";
   let taskDetailsTemplate = loadPromptFromTemplate("listTasks/taskDetails.md");
-  // 添加每個狀態下的詳細任務
+  // 添加每个状态下的详细任务
   for (const statusType of Object.values(TaskStatus)) {
     const tasksWithStatus = tasks[statusType] || [];
     if (
@@ -67,7 +67,7 @@ export function getListTasksPrompt(params: ListTasksPromptParams): string {
       (filterStatus === "all" || filterStatus === statusType)
     ) {
       for (const task of tasksWithStatus) {
-        let dependencies = "沒有依賴";
+        let dependencies = "没有依赖";
         if (task.dependencies && task.dependencies.length > 0) {
           dependencies = task.dependencies
             .map((d) => `\`${d.taskId}\``)
@@ -94,6 +94,6 @@ export function getListTasksPrompt(params: ListTasksPromptParams): string {
     taskDetailsTemplate: taskDetails,
   });
 
-  // 載入可能的自定義 prompt
+  // 载入可能的自定义 prompt
   return loadPrompt(prompt, "LIST_TASKS");
 }

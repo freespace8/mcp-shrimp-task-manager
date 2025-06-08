@@ -1,6 +1,6 @@
 /**
  * verifyTask prompt 生成器
- * 負責將模板和參數組合成最終的 prompt
+ * 负责将模板和参数组合成最终的 prompt
  */
 
 import {
@@ -11,7 +11,7 @@ import {
 import { Task } from "../../types/index.js";
 
 /**
- * verifyTask prompt 參數介面
+ * verifyTask prompt 参数介面
  */
 export interface VerifyTaskPromptParams {
   task: Task;
@@ -20,9 +20,9 @@ export interface VerifyTaskPromptParams {
 }
 
 /**
- * 提取摘要內容
- * @param content 原始內容
- * @param maxLength 最大長度
+ * 提取摘要内容
+ * @param content 原始内容
+ * @param maxLength 最大长度
  * @returns 提取的摘要
  */
 function extractSummary(
@@ -35,13 +35,13 @@ function extractSummary(
     return content;
   }
 
-  // 簡單的摘要提取：截取前 maxLength 個字符並添加省略號
+  // 简单的摘要提取：截取前 maxLength 个字符并添加省略号
   return content.substring(0, maxLength) + "...";
 }
 
 /**
- * 獲取 verifyTask 的完整 prompt
- * @param params prompt 參數
+ * 获取 verifyTask 的完整 prompt
+ * @param params prompt 参数
  * @returns 生成的 prompt
  */
 export function getVerifyTaskPrompt(params: VerifyTaskPromptParams): string {
@@ -70,6 +70,6 @@ export function getVerifyTaskPrompt(params: VerifyTaskPromptParams): string {
       extractSummary(task.analysisResult, 300) || "no analysis result",
   });
 
-  // 載入可能的自定義 prompt
+  // 载入可能的自定义 prompt
   return loadPrompt(prompt, "VERIFY_TASK");
 }
