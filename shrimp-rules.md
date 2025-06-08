@@ -10,7 +10,7 @@
   - 主要语言: TypeScript
   - 执行环境: Node.js (ES Module)
   - 主要框架/函式库: Express.js (用于可能的 API 或 WebGUI), Zod (用于资料验证)
-  - 套件管理器: npm
+  - 套件管理器: pnpm
 - **核心功能**:
   - 自然语言任务解析
   - 结构化任务生成与管理
@@ -31,7 +31,7 @@
   - `src/tests/`: 单元测试和整合测试。
 - **编译输出目录**: `dist/` (此目录由 `tsc` 自动生成，**禁止手动修改此目录内容**)。
 - **设定档**:
-  - `package.json`: 专案依赖和脚本。**新增依赖后，必须执行 `npm install`。**
+  - `package.json`: 专案依赖和脚本。**新增依赖后，必须执行 `pnpm install`。**
   - `tsconfig.json`: TypeScript 编译设定。**非必要情况下，禁止修改 `"strict": true` 设定。**
   - `.env.example` & `.env`: 环境变数设定。**敏感资讯不得提交至版本控制。**
 - **文件**:
@@ -138,10 +138,10 @@
 
 - **新增依赖**:
   - **必须**先评估依赖的必要性、维护状态和安全性。
-  - 使用 `npm install <package-name>` (用于执行依赖) 或 `npm install --save-dev <package-name>` (用于开发依赖)。
+  - 使用 `pnpm add <package-name>` (用于执行依赖) 或 `pnpm add -D <package-name>` (用于开发依赖)。
   - **必须**在 `package.json` 中指定明确的版本范围 (例如 `^1.2.3` 或 `~1.2.3`)，避免使用 `*`。
 - **更新依赖**: 定期检查并更新依赖至最新稳定版本，以获取安全性修补和新功能。更新前需评估潜在的破坏性变更。
-- **移除依赖**: 若不再需要某个依赖，使用 `npm uninstall <package-name>` 将其移除，并从程式码中移除相关引用。
+- **移除依赖**: 若不再需要某个依赖，使用 `pnpm remove <package-name>` 将其移除，并从程式码中移除相关引用。
 
 ## 6. 工作流程规范
 
@@ -152,8 +152,8 @@
 3.  **编码与测试**:
     - 按照本规范进行编码。
     - **必须**为新功能或修复的 bug 编写单元测试 (存放于 `src/tests/`)。
-    - 执行 `npm run build` 确保程式码可以成功编译。
-    - 本地执行 `npm run dev` 或 `npm run start` 进行测试。
+    - 执行 `pnpm run build` 确保程式码可以成功编译。
+    - 本地执行 `pnpm run dev` 或 `pnpm run start` 进行测试。
 4.  **程式码提交**:
     - Git commit message 应遵循 Conventional Commits 规范 (例如 `feat: add user authentication`, `fix: resolve issue with task sorting`)。
     - **禁止提交包含 `console.log` 或其他侦错讯息的程式码至主要分支。**
@@ -184,7 +184,7 @@
 - **修改 `src/index.ts`**:
   - 若修改了模组的汇出 API，**必须**检查所有依赖此模组的专案或档案，并进行相应调整。
 - **修改 `package.json` (特别是 `dependencies` 或 `scripts`)**:
-  - **必须**通知团队成员或相关 AI Agent 执行 `npm install`。
+  - **必须**通知团队成员或相关 AI Agent 执行 `pnpm install`。
   - 若修改 `scripts`，需确保 CI/CD 流程 (若有) 也相应更新。
 - **修改 `.env.example`**:
   - **必须**同步更新所有开发环境的 `.env` 档案，并通知团队成员。
@@ -225,7 +225,7 @@
 ## 9. 禁止事项
 
 - **禁止直接修改 `dist/` 目录下的任何档案。** 该目录为编译产物。
-- **禁止在未执行 `npm install` 的情况下，假定新依赖可用。**
+- **禁止在未执行 `pnpm install` 的情况下，假定新依赖可用。**
 - **禁止在主要分支 (`main` 或 `develop`) 直接提交未经测试或未完成的程式码。** 必须使用特性分支。
 - **禁止提交包含 API Keys、密码或其他敏感资讯的程式码至版本控制系统。** 使用 `.env` 档案管理此类资讯。
 - **禁止在未告知或未获同意的情况下，大幅修改核心架构或公共 API。**
