@@ -125,8 +125,9 @@ async function main() {
         });
       });
 
-      // 获取可用埠
-      const port = await getPort();
+      // 获取可用埠 - 支持环境变量指定端口
+      const preferredPort = process.env.GUI_PORT ? parseInt(process.env.GUI_PORT, 10) : undefined;
+      const port = preferredPort || await getPort();
 
       // 启动 HTTP 伺服器
       const httpServer = app.listen(port, () => {

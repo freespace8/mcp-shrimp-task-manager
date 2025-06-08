@@ -42,7 +42,7 @@ Shrimp Task Manager guides Agents through structured workflows for systematic pr
 - **Task Memory Function**: Automatically backup task history, providing long-term memory and reference capabilities
 - **Research Mode**: Systematic technical research capabilities with guided workflows for exploring technologies, best practices, and solution comparisons
 - **Project Rules Initialization**: Define project standards and rules to maintain consistency across large projects
-- **<a id="web-gui"></a>Web GUI**: Provides an optional web-based graphical user interface for task management. Enable by setting `ENABLE_GUI=true` in your `.env` file. When enabled, a `WebGUI.md` file containing the access address will be created in your `DATA_DIR`.
+- **<a id="web-gui"></a>Web GUI**: Provides an optional web-based graphical user interface for task management. Enable by setting `ENABLE_GUI=true` in your `.env` file. You can optionally specify a custom port using `GUI_PORT=3000`. When enabled, a `WebGUI.md` file containing the access address will be created in your `DATA_DIR`.
 
 ## 🧭 <a id="usage-guide"></a>Usage Guide
 
@@ -229,7 +229,8 @@ Shrimp Task Manager offers two configuration methods: global configuration and p
       "env": {
         "DATA_DIR": "/path/to/project/data", // 必須使用絕對路徑
         "TEMPLATES_USE": "en",
-        "ENABLE_GUI": "false"
+        "ENABLE_GUI": "false",
+        "GUI_PORT": "3000"
       }
     }
   }
@@ -246,7 +247,8 @@ or
       "env": {
         "DATA_DIR": "/mcp-shrimp-task-manager/data",
         "TEMPLATES_USE": "en",
-        "ENABLE_GUI": "false"
+        "ENABLE_GUI": "false",
+        "GUI_PORT": "3000"
       }
     }
   }
@@ -271,7 +273,8 @@ You can also set up dedicated configurations for each project to use independent
       "env": {
         "DATA_DIR": "/path/to/project/data", // Must use absolute path
         "TEMPLATES_USE": "en",
-        "ENABLE_GUI": "false"
+        "ENABLE_GUI": "false",
+        "GUI_PORT": "3000"
       }
     }
   }
@@ -288,7 +291,8 @@ or
       "env": {
         "DATA_DIR": "/path/to/project/data", // Must use absolute path
         "TEMPLATES_USE": "en",
-        "ENABLE_GUI": "false"
+        "ENABLE_GUI": "false",
+        "GUI_PORT": "3000"
       }
     }
   }
@@ -321,7 +325,8 @@ Shrimp Task Manager supports customizing prompt behavior through environment var
         "MCP_PROMPT_PLAN_TASK": "Custom planning guidance...",
         "MCP_PROMPT_EXECUTE_TASK_APPEND": "Additional execution instructions...",
         "TEMPLATES_USE": "en",
-        "ENABLE_GUI": "false"
+        "ENABLE_GUI": "false",
+        "GUI_PORT": "3000"
       }
     }
   }
@@ -337,6 +342,8 @@ Additionally, there are other system configuration variables:
 
 - **DATA_DIR**: Specifies the directory where task data is stored
 - **TEMPLATES_USE**: Specifies the template set to use for prompts. Defaults to `en`. Currently available options are `en` and `zh`. To use custom templates, copy the `src/prompts/templates_en` directory to the location specified by `DATA_DIR`, rename the copied directory (e.g., to `my_templates`), and set `TEMPLATES_USE` to the new directory name (e.g., `my_templates`).
+- **ENABLE_GUI**: Set to `true` to enable the web-based graphical user interface. Defaults to `false`.
+- **GUI_PORT**: Specifies the port for the GUI web server. If not set, an available port will be automatically assigned. Only takes effect when `ENABLE_GUI=true`.
 
 For detailed instructions on customizing prompts, including supported parameters and examples, see the [Prompt Customization Guide](docs/en/prompt-customization.md).
 

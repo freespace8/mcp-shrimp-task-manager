@@ -39,7 +39,7 @@
 - **思维链过程**：通过步骤化的推理系统性地分析复杂问题
 - **研究模式**：系统性技术研究功能，提供引导式工作流程来探索技术、最佳实践和解决方案比较
 - **专案规范初始化**：定义专案标准和规则，维持大型专案的一致性
-- **<a id="网页图形介面"></a>网页图形介面**：提供选用的网页图形化使用者介面来管理任务。透过在您的 `.env` 档案中设定 `ENABLE_GUI=true` 来启用。启用后，将会在您的 `DATA_DIR` 中建立一个包含存取网址的 `WebGUI.md` 档案。
+- **<a id="网页图形介面"></a>网页图形介面**：提供选用的网页图形化使用者介面来管理任务。透过在您的 `.env` 档案中设定 `ENABLE_GUI=true` 来启用。您可以选择性地使用 `GUI_PORT=3000` 指定自定义端口。启用后，将会在您的 `DATA_DIR` 中建立一个包含存取网址的 `WebGUI.md` 档案。
 
 ## 🧭 <a id="使用指南"></a>使用指南
 
@@ -226,7 +226,8 @@ npm run build
       "env": {
         "DATA_DIR": "/mcp-shrimp-task-manager/data",
         "TEMPLATES_USE": "en",
-        "ENABLE_GUI": "false"
+        "ENABLE_GUI": "false",
+        "GUI_PORT": "3000"
       }
     }
   }
@@ -242,7 +243,8 @@ or
       "env": {
         "DATA_DIR": "/mcp-shrimp-task-manager/data",
         "TEMPLATES_USE": "en",
-        "ENABLE_GUI": "false"
+        "ENABLE_GUI": "false",
+        "GUI_PORT": "3000"
       }
     }
   }
@@ -267,7 +269,8 @@ or
       "env": {
         "DATA_DIR": "/path/to/project/data", // 必須使用絕對路徑
         "TEMPLATES_USE": "en",
-        "ENABLE_GUI": "false"
+        "ENABLE_GUI": "false",
+        "GUI_PORT": "3000"
       }
     }
   }
@@ -283,7 +286,8 @@ or
       "env": {
         "DATA_DIR": "/path/to/project/data", // 必須使用絕對路徑
         "TEMPLATES_USE": "en",
-        "ENABLE_GUI": "false"
+        "ENABLE_GUI": "false",
+        "GUI_PORT": "3000"
       }
     }
   }
@@ -316,7 +320,8 @@ or
         "MCP_PROMPT_PLAN_TASK": "自定義規劃指導...",
         "MCP_PROMPT_EXECUTE_TASK_APPEND": "附加執行說明...",
         "TEMPLATES_USE": "en",
-        "ENABLE_GUI": "false"
+        "ENABLE_GUI": "false",
+        "GUI_PORT": "3000"
       }
     }
   }
@@ -332,6 +337,8 @@ or
 
 - **DATA_DIR**：指定任务数据存储的目录
 - **TEMPLATES_USE**：指定提示词使用的模板集。预设为 `en`。目前可用的选项有 `en` 和 `zh`。若要使用自定义模板，请将 `src/prompts/templates_en` 目录复制到 `DATA_DIR` 指定的位置，重新命名复制的目录（例如，`my_templates`），并将 `TEMPLATES_USE` 设置为新的目录名称（例如，`my_templates`）。
+- **ENABLE_GUI**：设置为 `true` 以启用网页图形化使用者介面。预设为 `false`。
+- **GUI_PORT**：指定 GUI 网页服务器的端口。如果未设置，将自动分配可用端口。仅在 `ENABLE_GUI=true` 时生效。
 
 有关自定义提示词的详细说明，包括支援的参数和范例，请参阅[提示词自定义指南](prompt-customization.md)。
 
